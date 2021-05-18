@@ -447,3 +447,15 @@ variable "random_password_length" {
   type        = number
   default     = 10
 }
+
+variable "master_password_vault_secret_path" {
+  description = "(Optional) Path to a vault secret for password."
+  type = string
+  default = ""
+}
+
+variable "master_password_vault_secret_key" {
+  description = "(Optional) Key to a vault secret for password."
+  type = string
+  default = ""
+}

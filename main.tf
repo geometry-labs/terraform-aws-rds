@@ -1,5 +1,6 @@
 locals {
-  master_password      = var.create_db_instance && var.create_random_password ? random_password.master_password[0].result : var.password
+  enable_vault = var.master_password_vault_secret_path != "" && var.master_password_vault_secret_key != ""
+  master_password      = var.create_db_instance && var.create_random_password ? random_password.master_password[0].result : local.enable_vault ? lookup(join("", data.vault_generic_secret.master_password.*.data_json), var.master_password_vault_secret_key) : var.password
   db_subnet_group_name = var.replicate_source_db != null ? null : coalesce(var.db_subnet_group_name, module.db_subnet_group.db_subnet_group_id)
 
   parameter_group_name_id = var.create_db_parameter_group ? module.db_parameter_group.db_parameter_group_id : var.parameter_group_name
@@ -14,6 +15,11 @@ resource "random_password" "master_password" {
 
   length  = var.random_password_length
   special = false
+}
+
+data "vault_generic_secret" "master_password" {
+  count = local.enable_vault != "" ? 1 : 0
+  path = var.master_password_vault_secret_path
 }
 
 module "db_subnet_group" {
